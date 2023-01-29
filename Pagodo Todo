@@ -1,0 +1,20 @@
+Add crontabs to automate address and route randomisation
+
+Look into yagooglesearch proxy option
+
+Create an index of active proxies - look on github
+
+Create an index of domains
+
+Link a persistant database for data collection
+
+Route traffic from daatabase though IPTABLES/
+    + Add MASQUERADE
+
+Menu to select between different; 
+    - Connection schema
+    - Proxies
+    - MAC change intervals
+    - 
+
+ 

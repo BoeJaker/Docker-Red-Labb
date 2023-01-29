@@ -1,0 +1,3 @@
+#Mins  Hours  Days   Months  Day of the week    Command
+0,15,30,45 * * * * /Scripts/newroute.sh # once per hour - every hour
+0,15,30,45 * * * * /Scripts/randomise_mac.sh # once per hour - every hour

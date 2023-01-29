@@ -1,0 +1,51 @@
+- TOR password generator generates unique password and hash for each instance and inserts the values into the config files
+
+
+Stages:
+
+0. OpSec - Operational security
+    Description:
+        Ensuring no personal data is linked to any of this.
+    Module: 
+        Strictly meatspace
+
+1. Obfuscation - Operational security
+    Description:
+        Using masqerading, proxies port bending and other such techniques to reduce our digital footprint
+    Module: 
+        Koan Linux - a custom distribution of ubuntu that actively and pasively minimizes traceability of digital actions
+
+2. Probing - Pre OSINT
+    Description:
+        Using large-scale data collection automation to find targets
+    Module: 
+
+3. OSINT Open Source Intelligence Gathering
+    Description:
+        Using a wide range of techniques to extract surface level data about the target
+    Module:
+
+4. ASAA - Attack Surface Area Analysis
+    Description:
+        Analyse the data gathered in the previous two steps to 
+
+
+5. Payload Preperation
+     Description:
+        The process of preparing payloads to be delivered via the chosen exploits
+    Module:
+
+
+6. Explotation 
+
+
+
+7. Payload delivery
+
+
+
+8. Post exploit C&C (Command and control)
+
+
+
+9. Cleanup
