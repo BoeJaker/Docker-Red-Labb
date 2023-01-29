@@ -1,3 +1,6 @@
+-- WORK IN PROGRESS --
+
+
 Ubuntu Koan
     A quiet flavour of ubuntu - the less noise you make the more you hear.
 
