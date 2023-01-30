@@ -1,13 +1,27 @@
 -- WORK IN PROGRESS --
 
 
-# Modules
-## Ubuntu Koan
-A quiet flavour of ubuntu - the less noise you make the more you hear.
-## MITM Proxy
-Packet capture tool
+# Layers
+
+
+## Koan Proxy
+### Traffic obfuscator and firewall - The less noise you make the more you hear.
+This container encrypts traffic and routes it through tor, filters packets 
+
+## Mitm Proxy
+### Packet capture & replay tool
+This container captures packets traveling either way between this network and the internet
+
+## Proxychains
+### 
+This container routes traffic through a chain of proxy, first Mitm, then Koan (Tor)
+
+## Houston
+### Command and control
+This container provides a gui that is accesible though a web browser and a flexible kali installation
+
 ## Database
-    
+### A persistant database of exploits, vulnerabilities and OSINT
 
 # Usage
 
