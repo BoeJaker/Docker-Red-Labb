@@ -19,8 +19,8 @@ RUN apt update && \
     # Install pagodo python dependancies
     python3 -m pip install yagooglesearch && \
     # Scrape dorks database
-    printf "echo 'Building Proxy Network' \ntor > /dev/tty & \nsleep 10\nss -nlt && \n/Scripts/whatmyip.sh && \nsource torsocks on && \n/Scripts/whatmyip.sh && \n echo ''" | tee -a /etc/bash.bashrc && \
-    python3 -m pip install --upgrade certifi && \
+    printf "echo 'Building Proxy Network' \ntor > /dev/tty & \nsleep 10\nss -nlt && \n/Scripts/whatmyip.sh && \nsource torsocks on && \n/Scripts/whatmyip.sh && \n echo ''" | tee -a /etc/bash.bashrc
+    # python3 -m pip install --upgrade certifi
     # python3 /pagodo/ghdb_scraper.py
     # Modify Bashrc
 # Upload config files

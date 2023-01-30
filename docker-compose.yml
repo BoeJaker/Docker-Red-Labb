@@ -7,8 +7,9 @@ services:
     build:
       context: ./Mitm
     container_name: mitmproxy
-    # entrypoint: "mitmweb --web-host 0.0.0.0 --set block_global=false" # Test
-    entrypoint: "mitmweb --web-host 0.0.0.0 --set block_global=false --mode transparent --showhost" # Full
+    entrypoint: "mitmweb --web-host 0.0.0.0 --set block_global=false"
+    # entrypoint: "mitmweb --web-host 0.0.0.0 --set block_global=false --mode upstream:https://koan.pagodo_and_proxychain_front:9050" # Test
+    # entrypoint: "mitmweb --web-host 0.0.0.0 --set block_global=false --mode transparent --showhost" # Full
     environment:
       http_proxy: "${mitm_http_proxy}"
     networks:
@@ -25,21 +26,7 @@ services:
           - SYS_MODULE
     # depends_on:
     #   - koan
-
-  houston: # Command and control
-    # image: kalilinux/kali-rolling:latest
-    build:
-      context: ./Houston
-    environment:
-      http_proxy: "${http_proxy}"
-    restart: always
-    entrypoint: /usr/bin/bash
-    tty: true
-    networks:
-      - back
-    depends_on:
-      - mitmprox
-  
+    
   koan: # Proxy - Network obfuscation
     # image: obfuscated:latest
     build:
@@ -47,6 +34,7 @@ services:
     restart: always
     environment:
       TOR_CREDS: "${TOR_CREDS}"
+      TOR_CRED_HASH: "${TOR_CRED_HASH}"
       http_proxy: "${http_proxy}"
     entrypoint: /usr/bin/bash
     tty: true
@@ -65,6 +53,21 @@ services:
     depends_on:
       - mitmprox
 
+  houston: # Command and control
+    # image: kalilinux/kali-rolling:latest
+    build:
+      context: ./Houston
+    environment:
+      http_proxy: "${http_proxy}"
+    restart: always
+    entrypoint: /usr/bin/bash
+    tty: true
+    networks:
+      - back
+    depends_on:
+      - mitmprox
+      - koan
+
   database: # Data archiving
     image: postgres:latest
     environment:
@@ -80,6 +83,9 @@ services:
       - '5432:5432'
     networks:
       - back
+    depends_on:
+      - mitmprox
+      - koan
 
 networks:
     front: # Public facing network

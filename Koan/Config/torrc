@@ -192,5 +192,5 @@ SocksPort 0.0.0.0:9050
 
 # Use obfs4proxy to provide the obfs4 protocol.
 ClientTransportPlugin obfs4 exec /usr/bin/obfs4proxy
-HashedControlPassword 16:30CFA39CDFB93D1F6060DF7954611B8952C3774F46C092E11B7359A304
+HashedControlPassword ${TOR_CRED_HASH}
 ControlPort 9051
