@@ -5,4 +5,4 @@ iptables-legacy -t nat -A PREROUTING -i eth0 -p tcp --dport 47162 -j REDIRECT --
 # ip6tables-legacy -t nat -A PREROUTING -i eth0 -p tcp --dport 80 -j REDIRECT --to-port 8080 
 # ip6tables-legacy -t nat -A PREROUTING -i eth0 -p tcp --dport 443 -j REDIRECT --to-port 8080
 # ip6tables-legacy -t nat -A PREROUTING -i eth0 -p tcp --dport 47162 -j REDIRECT --to-port 8080
-/sbin/iptables-save > /etc/iptables/rules.v4
+/sbin/iptables-save > /etc/iptables-legacy/rules.v4

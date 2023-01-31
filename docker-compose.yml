@@ -2,114 +2,146 @@ version: '3.5'
 
 services:
   
-  mitmprox:
-    # image: mitmproxy/mitmproxy
+  mitmprox: 
+
+    container_name: mitmproxy
+    
     build:
       context: ./Mitm
-    container_name: mitmproxy
-    entrypoint: "mitmweb --web-host 0.0.0.0 --set block_global=false"
+
+    entrypoint: "/etc/init.d/startup.sh"
     # entrypoint: "mitmweb --web-host 0.0.0.0 --set block_global=false --mode upstream:https://koan.pagodo_and_proxychain_external:9050" # Test
     # entrypoint: "mitmweb --web-host 0.0.0.0 --set block_global=false --mode transparent --showhost" # Full
+    
+    sysctls:
+      - net.ipv4.ip_forward=1
+      - net.ipv6.conf.all.forwarding=1
+      - net.ipv4.conf.all.send_redirects=1
+
+    cap_add:
+          - NET_ADMIN
+          - SYS_MODULE
+    
     environment:
       http_proxy: "${mitm_http_proxy}"
+    
     networks:
       - internal
       - external
+
     ports:
       - '8083:8081'
-    sysctls:
-      - net.ipv4.ip_forward=1
-      # - netfilter-persistent.service=1
-      # - net.ipv6.ip_forward=1
-      # - net.ipv6.conf.all.forwarding=1
-      # - net.ipv4.conf.all.send_redirects=1
-    cap_add:
-          - NET_ADMIN
-          - SYS_MODULE
-    # depends_on:
-    #   - koan
+    
     
   koan: # Proxy - Network obfuscation
-    # image: obfuscated:latest
+    
     build:
       context: ./Koan
-    restart: always
-    environment:
-      TOR_CREDS: "${TOR_CREDS}"
-      TOR_CRED_HASH: "${TOR_CRED_HASH}"
-      http_proxy: "${http_proxy}"
+    
     entrypoint: /usr/bin/bash
+    
     tty: true
-    networks:
-      - internal
-      - external
-      # intrernal:
-      #   ipv4_address: 172.16.0.3
-      # external:
-      #   ipv4_address: 173.16.0.3
-    sysctls:
-      - net.ipv4.ip_forward=1
-      # - net.ipv6.ip_forward=1
-      # - net.ipv6.conf.all.forwarding=1
-      # - net.ipv4.conf.all.send_redirects=1
-    cap_add:
-          - NET_ADMIN
-          - SYS_MODULE
+    
+    restart: always
+    
     depends_on:
       - mitmprox
 
-  houston: # Command and control
-    # image: kalilinux/kali-rolling:latest
-    build:
-      context: ./Houston
+    sysctls:
+      - net.ipv4.ip_forward=1
+      - net.ipv6.conf.all.forwarding=1
+      - net.ipv4.conf.all.send_redirects=1
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+
     environment:
-      http_proxy: "${http_proxy}"
-    restart: always
-    entrypoint: /usr/bin/bash
-    tty: true
+      TOR_CREDS: "${TOR_CREDS}"
+      TOR_CRED_HASH: "${TOR_CRED_HASH}"
+      http_proxy: "${http_proxy}"    
+
     networks:
       - internal
+      - external
+
+
+  houston: # Command and control
+    
+    build:
+      context: ./Houston
+    
+    entrypoint: /usr/bin/bash
+    
+    tty: true
+    
+    restart: always
+    
     depends_on:
       - mitmprox
       - koan
 
+    environment:
+      http_proxy: "${http_proxy}"
+
+    networks:
+      - internal
+
+
   database: # Data archiving
+    
     image: postgres:latest
+    
     environment:
       POSTGRES_USER: "${POSTGRES_USER}"
       POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
-    # entrypoint: /bin/bash
-    tty: true
+    
     entrypoint: /bin/sh
+    
+    tty: true
+    
     restart: always
+    
+    depends_on:
+      - mitmprox
+      - koan
+
     volumes:
       - C:\Users\User\MEGA\Docker\pagodo_and_proxychain\Database\data:/home
+
     ports:
       - '5432:5432'
     networks:
       - internal
-    depends_on:
-      - mitmprox
-      - koan
+   
 
 networks:
     internal: # Internal network
+        
         driver: bridge
+        
         enable_ipv6: false
-        # internal: true
+        
+        internal: true
+        
         ipam:
             driver: default
+           
             config:
                 - subnet: 172.16.0.0/16
                   gateway: 172.16.0.1
     
     external: # Public facing network
+       
         driver: bridge
+
+        enable_ipv6: false
+        
         driver_opts:
           com.docker.network.bridge.enable_ip_masquerade: "true"
-        enable_ipv6: false
+        
         ipam:
             driver: default
+            
             config:
                 - subnet: 173.16.0.0/16
                   gateway: 173.16.0.1
