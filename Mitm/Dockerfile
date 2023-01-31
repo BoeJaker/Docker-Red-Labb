@@ -1,11 +1,14 @@
 
 FROM mitmproxy/mitmproxy:latest
-# RUN export http_proxy="http://localhost:8080/" &&\
-RUN apt update && \
-    apt install nmap curl proxychains4 tor iptables iptables-persistent tcpdump -y 
+COPY iptables.sh /Scripts/iptables.sh
+COPY startup.sh /etc/init.d/startup.sh
+RUN export http_proxy=${mitm_http_proxy} &&\
+    apt update && \
+    apt install nmap curl iptables iptables-persistent tcpdump -y && \
+    apt install proxychains4 tor && \
+    chmod -R +x /Scripts 
+    # /Scripts/iptables.sh
     # proxychains4-daemon
-# EXPOSE 8080
-COPY iptables.sh /Scripts/ip6tables.sh
+# EXPOSE 8083
 USER root
-CMD /bin/bash 
-# /Scripts/iptables.sh &
+CMD ["/bin/bash","tcpdump"]

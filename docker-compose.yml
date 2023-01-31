@@ -19,6 +19,7 @@ services:
       - '8083:8081'
     sysctls:
       - net.ipv4.ip_forward=1
+      # - netfilter-persistent.service=1
       # - net.ipv6.ip_forward=1
       # - net.ipv6.conf.all.forwarding=1
       # - net.ipv4.conf.all.send_redirects=1
