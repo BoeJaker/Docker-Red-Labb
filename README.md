@@ -4,36 +4,36 @@
 This docker container network is intended for security research only
 
 # Layers
-
+# Components
 ## Koan Proxy
-### Traffic obfuscator and firewall - The less noise you make the more you hear.
-This container encrypts traffic and routes it through tor, filters packets
-BUILD NOTE: Could bdee rolled up with Mitm
--tor
-
-## Mitm Proxy
-### Packet capture & replay tool
-This container captures packets traveling either way between this network and the internet
-- mitmproxy
-- tcpdump
-
-## Proxychains
+### Traffic obfuscator, firewall, multi-proxy and packet capture / replay tool - The less noise you make the more you hear.
 ### 
 This container routes traffic through a chain of proxy, first Mitm, then Koan (Tor)
-- proxychains
+This container captures packets traveling either way between this network and the internet
+This container encrypts traffic and routes it through tor, filters packets
+BUILD NOTE: Could bdee rolled up with Mitm
+
+- [proxychains]()
+- tor
+- [mitmproxy]()
+- [tcpdump]()
+- nyx
+
 
 ## OSINT Scanner
 ###
 Automatically scans the internet looking for vulnerabilities
-- pagodo
-- nmap
-- traceroute
-- 
-## Houston
+- [pagodo]()
+- [nmap]()
+- [traceroute]()
+- [sqlmap](https://sqlmap.org/)
+-  
+
+## [Houston](houston)
 ### Command and control
 This container provides a gui that is accesible though a web browser and a flexible kali installation
 
-## OSINT Database
+## [OSINT Database](database)
 ### A persistant database of exploits, vulnerabilities and other OSINT gathered by houston
 
 ## Source_Data Database
