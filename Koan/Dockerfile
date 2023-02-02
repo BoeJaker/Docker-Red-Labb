@@ -6,10 +6,8 @@ RUN apt update && \
     apt install -y git python3 python3-pip tor obfs4proxy proxychains4 -y && \
     apt install iproute2 curl netcat systemctl nmap -y && \
     apt install -y nano cron -y && \
-
     # Set file permissions 
     chmod -R +x /Scripts && \
-
     printf "SocksPort 0.0.0.0:9050 \n \
             ClientTransportPlugin obfs4 exec /usr/bin/obfs4proxy\n \
             HashedControlPassword 16:30CFA39CDFB93D1F6060DF7954611B8952C3774F46C092E11B7359A304\n \

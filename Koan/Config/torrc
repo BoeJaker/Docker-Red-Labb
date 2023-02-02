@@ -194,3 +194,4 @@ SocksPort 0.0.0.0:9050
 ClientTransportPlugin obfs4 exec /usr/bin/obfs4proxy
 HashedControlPassword ${TOR_CRED_HASH}
 ControlPort 9051
+CookieAuthentication 1

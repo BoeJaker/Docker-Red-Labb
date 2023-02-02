@@ -3,27 +3,25 @@ version: '3.5'
 services:
   
   mitmprox: 
-
+  
     container_name: mitmproxy
     
     build:
       context: ./Mitm
 
-    entrypoint: "/etc/init.d/startup.sh"
-    # entrypoint: "mitmweb --web-host 0.0.0.0 --set block_global=false --mode upstream:https://koan.pagodo_and_proxychain_external:9050" # Test
-    # entrypoint: "mitmweb --web-host 0.0.0.0 --set block_global=false --mode transparent --showhost" # Full
-    
+    entrypoint: "/Scripts/startup.sh"
+   
     sysctls:
       - net.ipv4.ip_forward=1
-      - net.ipv6.conf.all.forwarding=1
+      - net.ipv6.conf.all.forwarding=0
       - net.ipv4.conf.all.send_redirects=1
 
     cap_add:
           - NET_ADMIN
           - SYS_MODULE
     
-    environment:
-      http_proxy: "${mitm_http_proxy}"
+    # environment:
+      # http_proxy: "${mitm_http_proxy}"
     
     networks:
       - internal
@@ -110,6 +108,26 @@ services:
 
     ports:
       - '5432:5432'
+    networks:
+      - internal
+
+    user:
+      postgres
+
+  databaseadmin:  
+
+    image: dpage/pgadmin4
+    
+    environment:
+      POSTGRES_USER: "${POSTGRES_USER}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+    
+    entrypoint: /bin/sh
+    
+    tty: true
+    
+    restart: always
+
     networks:
       - internal
    

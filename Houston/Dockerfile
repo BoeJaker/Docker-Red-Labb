@@ -1,6 +1,6 @@
 FROM kalilinux/kali-rolling:latest
 RUN apt update && \
-    apt install python3 python3-pip iproute2 nmap -y && \
+    apt install git python3 python3-pip iproute2 nmap webscarab libpcap-dev sqlmap -y && \
     # Clone git repos
     git clone https://github.com/opsdisk/pagodo.git /pagodo && \
     # Install python packages
