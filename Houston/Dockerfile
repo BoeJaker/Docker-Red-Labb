@@ -1,4 +1,5 @@
 FROM kalilinux/kali-rolling:latest
+COPY Scripts /Scripts
 RUN apt update && \
     apt install git python3 python3-pip iproute2 nmap webscarab libpcap-dev sqlmap -y && \
     # Clone git repos

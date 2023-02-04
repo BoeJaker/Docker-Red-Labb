@@ -3,7 +3,7 @@ FROM ubuntu:latest
 COPY Scripts /Scripts
 RUN apt update && \ 
     # Install packages
-    apt install -y git python3 python3-pip tor obfs4proxy proxychains4 -y && \
+    apt install -y git python3 python3-pip tor obfs4proxy proxychains -y && \
     apt install iproute2 curl netcat systemctl nmap -y && \
     apt install -y nano cron -y && \
     # Set file permissions 
@@ -23,8 +23,8 @@ RUN apt update && \
     python3 -m pip install nyx
 
 # Upload config files
-COPY Config/proxychains4.conf /etc/proxychains4.conf
-# COPY Config/torrc /etc/tor/torrc
+COPY Config/proxychains.conf /etc/proxychains.conf
+# COPY Config/torrc.conf /etc/tor/torrc
 # COPY Config/torsocks.conf /etc/tor/torsocks.conf
 COPY Config/crontab /etc/crontab
 

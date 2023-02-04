@@ -1,5 +1,7 @@
 #!bin/bash
 
+# Refreshes the network configuration
+
 echo "restarting" ;
 ip link set dev eth0 down ;
 sleep 5 ;

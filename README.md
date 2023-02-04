@@ -5,7 +5,7 @@ This docker container network is intended for security research only
 
 # Layers
 # Components
-## Koan Proxy
+## [Koan Proxy](Koan)
 ### Traffic obfuscator, firewall, multi-proxy and packet capture / replay tool - The less noise you make the more you hear.
 ### 
 This container routes traffic through a chain of proxy, first Mitm, then Koan (Tor)
@@ -28,7 +28,8 @@ Automatically scans the internet looking for vulnerabilities
 - [traceroute]()
 - [sqlmap](https://sqlmap.org/)
 -  
-
+## [DNS Server](DNS%20Server)
+This network of containers has its own self-contained DNS-server
 ## [Houston](houston)
 ### Command and control
 This container provides a gui that is accesible though a web browser and a flexible kali installation
