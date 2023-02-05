@@ -1,13 +1,14 @@
-FROM ubuntu:latest
-# Copy in our tools
+
+FROM mitmproxy/mitmproxy:latest
 COPY Scripts /Scripts
-RUN apt update && \ 
-    # Install packages
-    apt install -y git python3 python3-pip tor obfs4proxy proxychains -y && \
-    apt install iproute2 curl netcat systemctl nmap -y && \
-    apt install -y nano cron -y && \
-    # Set file permissions 
+RUN apt update && \
+    apt install nmap curl iptables iptables-persistent tcpdump dsniff netcat -y && \
+    apt install proxychains tor obfs4proxy ettercap-text-only -y && \
+    apt install nano cron -y && \
     chmod -R +x /Scripts && \
+    # printf "/Scripts/startup.sh" | tee -a /etc/profile 
+    # /Scripts/iptables.sh
+    # proxychains4-daemon
     printf "SocksPort 0.0.0.0:9050 \n \
             ClientTransportPlugin obfs4 exec /usr/bin/obfs4proxy\n \
             HashedControlPassword 16:30CFA39CDFB93D1F6060DF7954611B8952C3774F46C092E11B7359A304\n \
@@ -19,17 +20,10 @@ RUN apt update && \
     printf "ClientTransportPlugin obfs4 exec /usr/bin/obfs4proxy\n \
             HashedControlPassword ${TOR_CRED_HASH} \n \
             ControlPort 9051" | tee -a /etc/tor/torrc && \
-    # Install python packages
     python3 -m pip install nyx
-
-# Upload config files
 COPY Config/proxychains.conf /etc/proxychains.conf
 # COPY Config/torrc.conf /etc/tor/torrc
 # COPY Config/torsocks.conf /etc/tor/torsocks.conf
 COPY Config/crontab /etc/crontab
-
-# Setup Connections & Shell
-# EXPOSE 9050
-USER root
-CMD /usr/bin/bash
+# USER Boejaker
 

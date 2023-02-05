@@ -32,14 +32,12 @@ Automatically scans the internet looking for vulnerabilities
 This network of containers has its own self-contained DNS-server
 ## [Houston](houston)
 ### Command and control
-This container provides a gui that is accesible though a web browser and a flexible kali installation
-
+This container provides a gui that is accesible though a web browser and a flexible kali installation 
 ## [OSINT Database](database)
-### A persistant database of exploits, vulnerabilities and other OSINT gathered by houston
-
+### A database of exploits, vulnerabilities and other OSINT gathered by houston. 
+You can set a volume to make the database persistant 
 ## Source_Data Database
-An index of domains, passwords, usernames and historical data such as the carna dataset
-
+An index of domains, passwords, usernames and historical data such as the carna dataset 
 # Usage
 
 Edit the .env.dummy file, insert your variables and remove the .dummy extension from the filename.
