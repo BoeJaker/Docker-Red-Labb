@@ -2,3 +2,4 @@
 ./Notes/*
 ./.vscode
 ./Database/data/*
+./Legacy/*

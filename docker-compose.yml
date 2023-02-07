@@ -22,7 +22,7 @@ services:
           - SYS_MODULE
     
     # environment:
-      # http_proxy: "${mitm_http_proxy}"
+      # http_proxy: "${koan_http_proxy}"
     
     networks:
       - internal
@@ -30,7 +30,7 @@ services:
 
     ports:
       - '8083:8081'
-    
+
     
   # koan: # Proxy - Network obfuscation
     
@@ -80,6 +80,7 @@ services:
 
     environment:
       http_proxy: "${http_proxy}"
+      database: "${database}"
 
     networks:
       - internal
@@ -92,11 +93,16 @@ services:
       context: ./Database
     
     environment:
+      # - DATABASE_HOST=127.0.0.1
+      # - POSTGRES_USER=root
+      # - POSTGRES_PASSWORD=root
+      # - POSTGRES_DB=root  
       POSTGRES_USER: "${POSTGRES_USER}"
       POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+      POSTGRES_DB: "${POSTGRES_DB}"
     
-    entrypoint: /Scripts/init.sh
-    
+    entrypoint: /Scripts/init.sh 
+
     tty: true
     
     restart: always
@@ -104,9 +110,9 @@ services:
     depends_on:
       - koan
 
-    volumes:
-      - C:\Users\User\MEGA\Docker\pagodo_and_proxychain\Database\data:/var/lib/postgresql/data
-
+    # volumes:
+      # - Database/data:/var/lib/postgresql/data
+      
     ports:
       - '5432:5432'
       
@@ -136,6 +142,23 @@ services:
   #   depends_on:
   #     - koan
    
+
+  # postgres:
+  #   container_name: postgres_demo
+  #   image: postgres:latest
+  #   environment:
+  #     POSTGRES_USER: "${POSTGRES_USER}"
+  #     POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+  #     PGDATA: /data/postgres
+  #   volumes:
+  #      - postgres-db:/data/postgres
+  #   ports:
+  #     - "5432:5432"
+
+
+# volumes:
+#   postgres-db:
+#     driver: local
 
 networks:
     internal: # Internal network

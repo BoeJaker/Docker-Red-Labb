@@ -3,6 +3,9 @@
 # Overview
 This docker container network is intended for security research only
 
+## Security
+### How does this lab keep you secure?
+These containers use no linked volumes, this prevents file injection onto the contaianers host.
 # Layers
 # Components
 ## [Koan Proxy](Koan)
