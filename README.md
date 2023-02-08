@@ -12,9 +12,9 @@ These containers use no linked volumes, this prevents file injection onto the co
 ### Traffic obfuscator, firewall, multi-proxy and packet capture / replay tool - The less noise you make the more you hear.
 ### 
 This container routes traffic through a chain of proxy, first Mitm, then Koan (Tor)
-This container captures packets traveling either way between this network and the internet
-This container encrypts traffic and routes it through tor, filters packets
-BUILD NOTE: Could bdee rolled up with Mitm
+captures packets traveling either way between this network and the internet
+encrypts traffic and routes it through tor, filters packets
+can create an endpoint that pretends to be a networks gateway - capturing all traffic and providing an injection point
 
 - [proxychains]()
 - tor
