@@ -1,5 +1,12 @@
 #!/bin/bash
-initdb 
+
+# Database setup
+# initdb 
 postgres &
-mv /Config/pg_hba.conf /var/lib/postgres/data/pg_hba.conf
+
+# Cryptographic key generation - These can be used to authenticate communications and encrypt locally sotred data
+# ssh-keygen -t rsa -b 4096 -f /Keys/link-key
+# echo "Your public key is below. Please save it somewhere easy to access"
+# cat /id_rsa.pub
+
 /bin/sh

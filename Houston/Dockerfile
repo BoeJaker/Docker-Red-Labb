@@ -3,7 +3,7 @@ COPY Scripts /Scripts
 RUN apt update && \
     apt install git python3 python3-pip iproute2 nmap netcat-traditional webscarab libpcap-dev sqlmap -y && \
     apt install postgresql-client -y && \
-    apt install iputils-ping curl wget && \
+    apt install iputils-ping curl wget -y && \
     # Clone git repos
     git clone https://github.com/opsdisk/pagodo.git /pagodo && \
     # Install python packages

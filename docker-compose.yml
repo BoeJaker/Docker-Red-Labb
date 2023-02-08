@@ -9,17 +9,21 @@ services:
     build:
       context: ./Koan
 
-    # entrypoint: "/Scripts/startup.sh"
+    # entrypoint: "/bin/bash"
     entrypoint: "mitmweb --web-host 0.0.0.0 --set block_global=false"
    
     sysctls:
       - net.ipv4.ip_forward=1
-      - net.ipv6.conf.all.forwarding=0
+      - net.ipv6.conf.all.forwarding=1
+      - net.ipv6.conf.all.disable_ipv6=0
       - net.ipv4.conf.all.send_redirects=1
 
     cap_add:
-          - NET_ADMIN
-          - SYS_MODULE
+          - ALL
+          # - NET_ADMIN
+          # - SYS_MODULE
+
+    privileged: true
     
     # environment:
       # http_proxy: "${koan_http_proxy}"
@@ -63,6 +67,29 @@ services:
   #     - internal
   #     - external
 
+  ettercap:
+    container_name: hack-ettercap
+    image: mrecco/ettercap:latest
+    command:
+    - "-TbqM"
+    - "arp"
+    - "-oi"
+    - "interface_name"
+    network_mode: host
+    pid: host
+    # privileged: true
+    cap_add:
+    - NET_ADMIN
+    - SYS_ADMIN
+    stop_grace_period: 3s
+    restart: always
+    depends_on:
+      - koan
+    environment:
+      # http_proxy: "${http_proxy}"
+      database: "${database}"
+    networks:
+      - external
 
   houston: # Command and control
     
