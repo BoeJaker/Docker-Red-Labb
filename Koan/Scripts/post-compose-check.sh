@@ -1,47 +1,49 @@
 #!/bin/bash
+BLUE="\e[34m"
+GREEN="\e[32m"
+RED="\e[31m"
+NC="\e[0m"
 
-GREEN='\033[0;32m'
-NC='\033[0m'
+#Configure Tor
+printf "ClientTransportPlugin obfs4 exec /usr/bin/obfs4proxy\n \
+            HashedControlPassword ""${TOR_CRED_HASH}"" \n \
+            ControlPort 9051" | tee -a /etc/tor/torrc && \
 
-echo 1 > /proc/sys/net/ipv4/ip_forward
-iptables -t nat -I POSTROUTING -s 173.16.0.0/24 -j MASQUERADE
-iptables -t nat -I POSTROUTING -s 172.16.0.0/24 -j MASQUERADE
-
-nmap 172-173.16.0.0-100 -oX /local_nmap.xml &>dev/null
+nmap 172-173.16.0.0-100 -oX /local_nmap.xml &>/dev/null
 results=$(xmllint --format --xpath "//host/address|//hostname|//port/@portid" local_nmap.xml | tr -d "<>")
 
 # echo "${GREEN}$results${NC}"
 ## Check if Internal network is up
-echo $results | grep "172.16.0.1" && {
-    echo "Internal up"
+echo $results | grep "172.16.0" &>/dev/null && {
+    echo -e "${GREEN}Internal up ${NC}"
 } || {
-    echo "Internal down"
+    echo -e "${RED}Internal down ${NC}"
 }
 
 ## Check if External network is up
-echo $results | grep "173.16.0.1" && {
-    echo "External up"
+echo $results | grep "173.16.0" &>/dev/null && {
+    echo -e "${GREEN} External up ${NC}"
 } || {
-    echo "External down"
+    echo -e "${RED} External down ${NC}"
 }
 
 ## Check if Database is up and working
-echo $results | grep "database" && {
+echo $results | grep "database"  &>/dev/null && {
 
-    psql -h "${database}" -p 5432 && { 
-        echo "Database up - Connection established" 
+    pg_isready -h "${database}" -p 5432 -U "${POSTGRES_USER}" && { 
+        echo -e "${GREEN} Database up - Connection established ${NC}" 
     } || {
-        echo "Database down - Connection could not be estbalished" 
+        echo -e "${RED} Database down - Connection could not be estbalished ${NC}" 
     }
 } || {
-    echo "Is the database up?"
+    echo -e "${RED} Is the database server up? ${NC}"
 }
 
 ## Check if command and control is up and working
-echo $results | grep "housten" && {
-    echo "Housten up"
+echo $results | grep "housten"  &>/dev/null && {
+    echo -e "${GREEN} Housten up ${NC}"
 } || {
-    echo "Houston down"
+    echo -e "${RED} Houston down ${NC}"
 }
 
 # mitmweb --web-host 0.0.0.0 --set block_global=false && {
@@ -49,15 +51,20 @@ echo $results | grep "housten" && {
 # } || {
 #     echo "Could not start Mitmproxy"
 # }
-echo "Connecting to TOR"
-tor --hush && {
-    echo "Connected to TOR network"
-} || {
-    echo "Connection to TOR netowrk failed"
-} &
 # mitmweb --web-host 0.0.0.0 --set block_global=false --mode upstream:https://0.0.0.0:9050 &
 # mitmweb --web-host 0.0.0.0 --set block_global=false --mode transparent --showhost &
-echo "Starting TCP dump in the background"
-tcpdump 1> /dev/tty1 &
-/usr/bin/bash
+
+echo -e "${BLUE}Connecting to TOR ${NC}"
+tor --hush && {
+    echo -e "${GREEN}Connected to TOR network ${NC}"
+} || {
+    echo -e "${RED}Connection to TOR netowrk failed ${NC}"
+} &
+
+echo -e "${BLUE}Starting TCP dump in the background ${NC}"
+tcpdump -v > /dev/tty1 &
+
+/Scripts/whatmyip.sh &&
+source torsocks on && 
+/Scripts/whatmyip.sh
 
