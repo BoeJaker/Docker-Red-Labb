@@ -1,0 +1,7 @@
+if (ip.proto == 1) {
+  if (icmp.type == 8) {
+    msg("Captured incoming PING request\n");
+    msg("Source IP: %s\n", ip.src);
+    msg("Destination IP: %s\n", ip.dst);
+  }
+}

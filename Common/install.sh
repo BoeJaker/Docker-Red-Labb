@@ -1,0 +1,1 @@
+nano curl ssh iputils-ping iproute2

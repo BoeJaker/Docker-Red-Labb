@@ -1,0 +1,5 @@
+if (ip.proto == ICMP)
+   and (icmp.type == 8) {
+      msg("Blocking ping request from %s\n", ip.src);
+      drop();
+   }

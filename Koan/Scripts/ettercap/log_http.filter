@@ -1,0 +1,7 @@
+if (ip.proto == TCP && tcp.src == 80) {
+    msg("[+] HTTP Request:\n");
+    msg("[+] Source: %s:%d\n", ip.src, tcp.src);
+    msg("[+] Destination: %s:%d\n", ip.dst, tcp.dst);
+    msg("[+] Payload:\n%s\n", data);
+    log("HTTP request from %s:%d to %s:%d\n%s\n", ip.src, tcp.src, ip.dst, tcp.dst, data);
+}

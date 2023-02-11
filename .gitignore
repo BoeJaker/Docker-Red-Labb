@@ -1,5 +1,8 @@
 *.env
+./Notes
 ./Notes/*
 ./.vscode
+./.vscode/*
 ./Database/data/*
+./Legacy
 ./Legacy/*

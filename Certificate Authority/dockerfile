@@ -1,0 +1,14 @@
+# Use a lightweight Linux distribution as the base image
+FROM ubuntu:latest
+
+# Install required components
+RUN apt update && \
+    apt install openssl lighttpd -y 
+
+# Copy the root CA configuration and certificate files
+COPY root-ca.cnf /etc/ssl/root-ca.cnf
+
+COPY Scripts /Scripts
+RUN chmod -R +x /Scripts 
+# Expose the web server port
+EXPOSE 80

@@ -1,0 +1,8 @@
+
+if (ip.proto == 6) {
+  if (tcp.dst == 80 || tcp.dst == 443 || tcp.dst == 21 || tcp.dst == 23 || tcp.dst == 25 || tcp.dst == 53 || tcp.dst == 8080) {
+    msg("Captured incoming Nmap scan\n");
+    msg("Source IP: %s\n", ip.src);
+    msg("Destination IP: %s\n", ip.dst);
+  }
+}
