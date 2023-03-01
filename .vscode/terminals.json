@@ -26,27 +26,27 @@
       "name": "Houston",
       "description": "This is a description",
       "focus": true,
-      "command": "docker exec -it pagodo_and_proxychain-houston-1 /bin/bash",
+      "command": "docker exec -it Housten /bin/bash",
       "split": "Koan"
     },
     {
       "name": "Postgres",
       "description": "This is a description",
       "focus": true,
-      "command": "docker exec -it pagodo_and_proxychain-database-1 /bin/bash",
+      "command": "docker exec -it Postgres /bin/bash",
       "split": "Houston"
     },
     {
       "name": "DNS",
       "description": "This is a description",
       "focus": false,
-      "command": "docker exec -it pagodo_and_proxychain-koan-1 /bin/bash"
+      "command": "docker exec -it dns /bin/bash"
     },
     {
       "name": "CA",
       "description": "This is a description",
       "focus": false,
-      "command": "docker exec -it pagodo_and_proxychain-houston-1 /bin/bash",
+      "command": "docker exec -it ca_authority /bin/bash",
       "split": "DNS"
     },
     {

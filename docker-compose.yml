@@ -1,6 +1,25 @@
 version: '3.5'
 
 services:
+
+  ca_authority:
+
+    container_name: ca_authority
+    
+    build:
+      context: ./Certificate Authority
+
+    entrypoint: /Scripts/post-compose.sh
+
+    tty: true
+
+    restart: always
+    
+    ports:
+    - '80:80'
+
+    networks:
+      - internal
   
   koan: 
   
@@ -39,51 +58,10 @@ services:
 
     ports:
       - '8083:8081'
-
-  ca_authority:
-    container_name: ca_authority
     
-    build:
-      context: ./Certificate Authority
-
-    entrypoint: /Scripts/post-compose.sh
-
-    restart: always
-    
-    ports:
-    - '80:80'
+    depends_on:
+      - ca_authority
   
-  # koan: # Proxy - Network obfuscation
-    
-  #   build:
-  #     context: ./Koan
-    
-  #   entrypoint: /usr/bin/bash
-    
-  #   tty: true
-    
-  #   restart: always
-    
-  #   depends_on:
-  #     - mitmprox
-
-  #   sysctls:
-  #     - net.ipv4.ip_forward=1
-  #     - net.ipv6.conf.all.forwarding=1
-  #     - net.ipv4.conf.all.send_redirects=1
-  #   cap_add:
-  #     - NET_ADMIN
-  #     - SYS_MODULE
-
-  #   environment:
-  #     TOR_CREDS: "${TOR_CREDS}"
-  #     TOR_CRED_HASH: "${TOR_CRED_HASH}"
-  #     http_proxy: "${http_proxy}"    
-
-  #   networks:
-  #     - internal
-  #     - external
-
   # ettercap:
   #   container_name: hack-ettercap
   #   image: mrecco/ettercap:latest
@@ -109,6 +87,8 @@ services:
   #     - external
 
   houston: # Command and control
+
+    container_name: Housten
     
     build:
       context: ./Houston
@@ -131,6 +111,8 @@ services:
 
 
   database: # Data archiving
+
+    container_name: Postgres
     
     # image: postgres:latest
     build:
@@ -150,8 +132,8 @@ services:
     depends_on:
       - koan
 
-    # volumes:
-      # - Database/data:/var/lib/postgresql/data
+    volumes:
+      - postgres-db:/var/lib/postgresql/data
       
     ports:
       - '5432:5432'
@@ -183,9 +165,20 @@ services:
   #     - koan
    
 
-# volumes:
-#   postgres-db:
-#     driver: local
+volumes:
+  postgres-db:
+    driver: local
+    driver_opts:
+        type: none
+        o: bind
+        device: C:\Users\User\MEGA\Docker\pagodo_and_proxychain\Database\data
+
+  housten:
+    driver: local
+    driver_opts:
+        type: none
+        o: bind
+        device: C:\Users\User\MEGA\Docker\pagodo_and_proxychain\Housten\data
 
 networks:
     internal: # Internal network

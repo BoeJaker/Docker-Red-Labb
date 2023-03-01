@@ -1,0 +1,8 @@
+zone "example.com" {
+    type master;
+    file "/etc/bind/db.example.com";
+};
+
+# This configuration file specifies the DNS zones that the server is 
+# authoritative for. In this example, the server is authoritative for 
+# the example.com domain.

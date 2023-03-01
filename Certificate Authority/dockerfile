@@ -3,12 +3,28 @@ FROM ubuntu:latest
 
 # Install required components
 RUN apt update && \
-    apt install openssl lighttpd -y 
-
-# Copy the root CA configuration and certificate files
-COPY root-ca.cnf /etc/ssl/root-ca.cnf
+    apt install openssl lighttpd -y && \
+    apt install bind9 -y && \
+    apt install openvpn easy-rsa openssh-client openssh-server -y
 
 COPY Scripts /Scripts
-RUN chmod -R +x /Scripts 
+COPY named.conf.options /etc/bind/named.conf.options
+COPY named.conf.local /etc/bind/named.conf.local
+COPY db.example.com /etc/bind/db.example.com
+# Copy the root CA configuration and certificate files
+COPY root-ca.cnf /etc/ssl/root-ca.cnf
+# Unixify line endings and add execution perms
+RUN sed -i -e 's/\r$//' /Scripts/*.sh && \
+    chmod -R +x /Scripts 
+# Generate root key, certificate and start the webserver
+RUN echo "/Scripts/post-compose.sh" | tee -a /etc/bash.bashrc
 # Expose the web server port
 EXPOSE 80
+# expose the DNS ports
+EXPOSE 53/tcp
+EXPOSE 53/udp
+
+CMD ["/usr/sbin/named", "-g"]
+
+RUN useradd -ms /bin/bash Certificate_auth
+USER Certificate_auth

@@ -9,4 +9,4 @@ postgres &
 # echo "Your public key is below. Please save it somewhere easy to access"
 # cat /id_rsa.pub
 # psql
-/bin/sh
+/bin/sh # -c "mount -t ecryptfs /var/lib/postgresql/data/ /var/lib/postgresql/data/"

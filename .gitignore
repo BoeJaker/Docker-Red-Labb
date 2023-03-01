@@ -4,5 +4,9 @@
 ./.vscode
 ./.vscode/*
 ./Database/data/*
+./Housten/data/*
 ./Legacy
 ./Legacy/*
+./*/Secrets
+./*/Secrets/*
+*secrets.txt
