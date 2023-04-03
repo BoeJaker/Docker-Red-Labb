@@ -2,6 +2,7 @@
 FROM mitmproxy/mitmproxy:latest
 
 COPY Scripts /Scripts
+COPY Init /Init
 
 RUN apt update && \
     # Setup locals and windows to unix line-end conversion
@@ -29,14 +30,14 @@ RUN apt update && \
     apt install sudo -y && \
     ## Gives scripts execute permission
     chmod -R +x /Scripts && \
+    chmod -R +x /Init && \
     \
     # proxychains4-daemon
     \
     /Scripts/Server_KeyGen.sh && \
-    /Scripts/Init/Routing.sh && \
     printf "echo 'Checking docker network integrity' ; \
-            \
-            /Scripts/Init/post-compose-check.sh" | tee -a /etc/bash.bashrc && \ 
+            /Init/Routing.sh ; \
+            /Init/post-compose-check.sh" | tee -a /etc/bash.bashrc && \ 
     \
     ## Tor monitor
     python3 -m pip install nyx && \
@@ -56,5 +57,5 @@ ENV LANGUAGE en_US:en
 COPY Config/proxychains.conf /etc/proxychains.conf
 COPY Config/crontab /etc/crontab
 
-RUN useradd -ms /bin/bash Koan
-USER Koan
+# RUN useradd -ms /bin/bash Koan
+# USER Koan

@@ -18,6 +18,8 @@ RUN apt update && \
     apt install nano -y && \
     #
     apt install openvpn easy-rsa openssh-client openssh-server -y && \
+    #
+    apt install python3.11-venv && \
     ## Clone git repos
     git clone https://github.com/opsdisk/pagodo.git /pagodo && \
     ## Install python packages
@@ -44,5 +46,6 @@ EXPOSE 5900
 EXPOSE 8888
 USER root
 CMD /usr/bin/bash
-RUN useradd -ms /bin/bash Houston
-USER Houston
+
+# RUN useradd -ms /bin/bash Houston
+# USER Houston
