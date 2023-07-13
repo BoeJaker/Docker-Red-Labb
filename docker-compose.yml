@@ -87,83 +87,43 @@ services:
   #     - external
 
   houston: # Command and control
-
     container_name: Housten
-    
     build:
       context: ./Houston
-    
     entrypoint: /usr/bin/bash
-    
     tty: true
-    
     restart: always
-    
     depends_on:
       - koan
-
     environment:
       http_proxy: "${http_proxy}"
       database: "${database}"
-
     networks:
       - internal
 
 
   database: # Data archiving
-
     container_name: Postgres
-    
     # image: postgres:latest
     build:
       context: ./Database
-    
     environment:  
       POSTGRES_USER: "${POSTGRES_USER}"
       POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
       POSTGRES_DB: "${POSTGRES_DB}"
-    
     entrypoint: /Scripts/init.sh 
-
     tty: true
-    
     restart: always
-    
     depends_on:
       - koan
-
     volumes:
       - postgres-db:/var/lib/postgresql/data
-      
     ports:
       - '5432:5432'
-      
     networks:
       - internal
-
     user:
       postgres
-
-  # databaseadmin:  
-
-  #   image: dpage/pgadmin4
-    
-  #   environment:
-  #     POSTGRES_USER: "${POSTGRES_USER}"
-  #     POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
-    
-  #   entrypoint: /bin/sh
-    
-  #   tty: true
-    
-  #   restart: always
-
-  #   networks:
-  #     - internal
-
-  #   depends_on:
-  #     - koan
-   
 
 volumes:
   postgres-db:
@@ -171,43 +131,33 @@ volumes:
     driver_opts:
         type: none
         o: bind
-        device: C:\Users\User\MEGA\Docker\pagodo_and_proxychain\Database\data
+        device: ./Database/data
 
   housten:
     driver: local
     driver_opts:
         type: none
         o: bind
-        device: C:\Users\User\MEGA\Docker\pagodo_and_proxychain\Housten\data
+        device: ./Housten/data
 
 networks:
     internal: # Internal network
-        
         driver: bridge
-        
         enable_ipv6: false
-        
         # internal: true
-        
         ipam:
             driver: default
-           
             config:
                 - subnet: 172.16.0.0/16
                   gateway: 172.16.0.1
     
     external: # Public facing network
-       
         driver: bridge
-
         enable_ipv6: false
-        
         driver_opts:
           com.docker.network.bridge.enable_ip_masquerade: "true"
-        
         ipam:
             driver: default
-            
             config:
                 - subnet: 173.16.0.0/16
                   gateway: 173.16.0.1

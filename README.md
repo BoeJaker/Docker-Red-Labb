@@ -8,7 +8,9 @@ This docker container network is intended for security research only
 These containers use no linked volumes, this prevents file injection onto the contaianers host.
 <br />
 <br />
+
 # Components
+
 ## [Koan Proxy & Firewall](Koan)
 Traffic obfuscator, firewall, multi-proxy and packet capture / replay tool <br/>
 The less noise you make the more you hear.
@@ -34,6 +36,7 @@ The packages installed on this container are as follows:
 - [tcpdump]()
 - [nyx]()
 
+
 <br/>
 <hr/>
 <br/>
@@ -49,14 +52,19 @@ Secures local network communications using RSA key pairs and encryption as well 
 
 ## [Houston](houston)
 ### Command and control
-This container provides a gui that is accesible though a web browser and a flexible kali installation.
+This container provides a gui that is accessible though a web browser and a flexible kali installation.
 
 ### OSINT Scanner
-Automatically scans the internet looking for vulnerabilities
-- [pagodo]()
-- [masscan]()
-- [nmap]()
-- [traceroute]()
+Scans networks and code for vulnerabilities
+- [OpenVas]() - Vulnerability Assesment
+- Cobalt Strike Community 
+- OWASP netattacker - network scanner and vulnerability enumerator
+- OWASP zap - application mitm proxy
+- [pagodo]() - Dorking
+- [Metasploit] - Dbnmap & Exploitation Framework
+- [masscan]() - Large Network Scan
+- [nmap]() - Targeted Network Scan
+- [traceroute]() - 
 - [sqlmap](https://sqlmap.org/)
 
 <br/>
