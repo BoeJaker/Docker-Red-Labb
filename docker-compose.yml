@@ -2,36 +2,25 @@ version: '3.5'
 
 services:
 
-  # meta-services
+  # Meta-Services
   full-stack:
     image: tianon/true
     depends_on: [koan, housten, openvas, zap, database]
 
   tool-stack:
-    image: 
+    image: tianon/true
     depends_on: [openvas, zap, database]
   
   openvas:
     image: tianon/true
     depends_on: gvm-tools
 
-  # ca_authority:
-  #   container_name: ca_authority
-  #   build:
-  #     context: ./Certificate Authority
-  #   entrypoint: /Scripts/post-compose.sh
-  #   tty: true
-  #   restart: always
-  #   ports:
-  #   - '80:80'
-  #   networks:
-  #     - internal
-  
+    
+  # Services
   koan: 
     container_name: Koan
     build:
       context: ./Koan
-    # entrypoint: "/bin/bash"
     entrypoint: "mitmweb --web-host 0.0.0.0 --set block_global=false"
     sysctls:
       - net.ipv4.ip_forward=1
@@ -54,34 +43,8 @@ services:
       - internal
       - external
     ports:
-      - '8083:8081'
-    
-    # depends_on:
-    #   - ca_authority
-  
-  # ettercap:
-  #   container_name: hack-ettercap
-  #   image: mrecco/ettercap:latest
-  #   command:
-  #   - "-TbqM"
-  #   - "arp"
-  #   - "-oi"
-  #   - "interface_name"
-  #   network_mode: host
-  #   pid: host
-  #   # privileged: true
-  #   cap_add:
-  #   - NET_ADMIN
-  #   - SYS_ADMIN
-  #   stop_grace_period: 3s
-  #   restart: always
-  #   depends_on:
-  #     - koan
-  #   environment:
-  #     # http_proxy: "${http_proxy}"
-  #     database: "${database}"
-  #   networks:
-  #     - external
+      - '8083:8081'  
+
 
   houston: # Command and control
     container_name: Housten
@@ -101,7 +64,6 @@ services:
 
   database: # Data archiving
     container_name: Postgres
-    # image: postgres:latest
     build:
       context: ./Database
     environment:  
@@ -122,6 +84,32 @@ services:
     user:
       postgres
   
+  # Tooling
+
+  ettercap:
+    container_name: hack-ettercap
+    image: mrecco/ettercap:latest
+    command:
+    - "-TbqM"
+    - "arp"
+    - "-oi"
+    - "interface_name"
+    network_mode: host
+    pid: host
+    # privileged: true
+    cap_add:
+    - NET_ADMIN
+    - SYS_ADMIN
+    stop_grace_period: 3s
+    restart: always
+    depends_on:
+      - koan
+    environment:
+      # http_proxy: "${http_proxy}"
+      database: "${database}"
+    networks:
+      - external
+
   zap:
     image: owasp/zap2docker-stable 
     ports: 
@@ -311,7 +299,8 @@ volumes:
   gvmd_socket_vol:
   ospd_openvas_socket_vol:
   redis_socket_vol:
-  
+  # End of openVAS
+
   postgres-db:
     driver: local
     driver_opts:

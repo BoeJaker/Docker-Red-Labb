@@ -1,5 +1,5 @@
 FROM kalilinux/kali-rolling:latest
-ARG KALI_METAPACKAGE=core
+ARG KALI_METAPACKAGE=full
 ARG KALI_DESKTOP=xfce
 
 COPY Scripts /Scripts
@@ -32,10 +32,63 @@ RUN apt update && \
     msfdb init && \
     /Scripts/init.sh
 
+# Setup postgres request forwarding
+RUN apt-get install socat -y
+RUN socat TCP-LISTEN:5432,fork TCP:workbench_postgres-log_1:5432 &
+
+# Set up VNC server
+RUN mkdir ~/.vnc
+RUN x11vnc -storepasswd secret ~/.vnc/passwd
+
+# Maltego & Metasploit
+RUN apt-get install metasploit-framework  -y
+RUN apt-get install maltego -y
+RUN git clone https://github.com/shizzz477/msploitego.git
+
+# Copy metaploit database configuration
+COPY ./client/kali/database.yml /usr/share/metasploit-framework/config/database.yml
+
+# # Configure SSH server
+RUN apt-get install -y openssh-server 
+RUN mkdir /var/run/sshd
+RUN echo 'root:password' | chpasswd
+RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+RUN echo "X11Forwarding yes" >> /etc/ssh/sshd_config
+RUN echo "X11UseLocalhost no" >> /etc/ssh/sshd_config
+
+# Install essential security tools and update them
+RUN apt-get install -y \
+    nmap \
+    openssh-client \
+    iptables \
+    lynis \
+    && apt-get clean
+
+# # Configure Lynis security auditing tool
+# RUN sed -i 's/^# CRONFILE=.*/CRONFILE="no"/' /etc/lynis/lynis.conf
+
+# # Remove unnecessary services and packages
+RUN apt-get purge -y \
+    rpcbind \
+    telnet \
+    && apt-get autoremove -y && apt-get clean
+
+# # Remove unnecessary setuid and setgid files
+RUN find / -perm /6000 -type f -exec chmod a-s {} \; || true
+RUN find / -perm /4000 -type f -exec chmod a-s {} \; || true
+
+# # Disable core dumps
+RUN echo "* hard core 0" > /etc/security/limits.d/10-kali-disable-core-dumps.conf
+
+# Set a secure umask value
+RUN echo "umask 027" >> /etc/bash.bashrc
+RUN systemctl disable syslog
+
 ## Install noVNC & VNC servers      
-# RUN apt-get -y install kali-linux-${KALI_METAPACKAGE}
-# RUN apt-get -y install kali-desktop-${KALI_DESKTOP}
-# RUN apt-get -y install tightvncserver dbus dbus-x11 novnc net-tools
+RUN apt-get -y install kali-linux-${KALI_METAPACKAGE}
+RUN apt-get -y install kali-desktop-${KALI_DESKTOP}
+RUN apt-get -y install tightvncserver dbus dbus-x11 novnc net-tools
+
 ENV VNCEXPOSE 0
 ENV VNCPORT 5900
 ENV VNCPWD changeme
