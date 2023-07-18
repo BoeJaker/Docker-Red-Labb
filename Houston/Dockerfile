@@ -1,51 +1,87 @@
-FROM kalilinux/kali-rolling:latest
-ARG KALI_METAPACKAGE=core
-ARG KALI_DESKTOP=xfce
+FROM kalilinux/kali-rolling:latest AS base
+
+RUN apt update
+RUN apt install sudo apt-utils -y
+RUN apt install git python3 python3-pip -y
+RUN apt install iproute2 nmap netcat-traditional webscarab libpcap-dev sqlmap iputils-ping curl wget -y
+RUN apt install postgresql-client -y
+RUN apt install nano -y
+RUN apt install python3.11-venv -y
+
+RUN apt-get -y install kali-linux-everything
+RUN apt-get -y install kali-desktop-xfce
+RUN apt-get -y install novnc python3-websockify python3-numpy
+RUN apt-get install x11vnc -y
+RUN apt-get install xvfb -y
+RUN apt-get install xfce4-terminal -y
+RUN mkdir ~/.vnc
+RUN x11vnc -storepasswd secret ~/.vnc/passwd
+
+FROM base AS ssh
+
+# # Configure SSH server
+RUN apt install openvpn easy-rsa openssh-client openssh-server -y
+RUN mkdir /var/run/sshd
+RUN echo 'root:password' | chpasswd
+RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+RUN echo "X11Forwarding yes" >> /etc/ssh/sshd_config
+RUN echo "X11UseLocalhost no" >> /etc/ssh/sshd_config
+
+FROM ssh AS postgres
+
+# Setup postgres request forwarding
+RUN apt-get install socat -y
+RUN socat TCP-LISTEN:${MSFDB_PORT},fork TCP:${LOCALHOST}:${MSFDB_PORT} &
+# Copy database configuration
+COPY database.yml /usr/share/metasploit-framework/config/database.yml
+
+FROM postgres as packages
+
+# Dorking
+RUN git clone https://github.com/opsdisk/pagodo.git /pagodo
+RUN python3 -m venv /pagodo/venv
+RUN source /env/bin/activate
+RUN python3 -m pip install yagooglesearch
+RUN python3 -m pip install --upgrade certifi
+RUN python3 /pagodo/ghdb_scraper.py # update pagodo database
+
+# Maltego & Metasploit
+RUN apt-get install metasploit-framework  -y
+RUN apt-get install maltego -y
+RUN git clone https://github.com/shizzz477/msploitego.git
+
+# Backdoors
+# TODO - movepackage setup to its own shell script 
+
+FROM packages as hardened
+
+# Remove unnecessary services and packages
+RUN apt-get purge -y \
+    rpcbind \
+    telnet \
+    && apt-get autoremove -y && apt-get clean
+# # Remove unnecessary setuid and setgid files
+RUN find / -perm /6000 -type f -exec chmod a-s {} \; || true
+RUN find / -perm /4000 -type f -exec chmod a-s {} \; || true
+# # Disable core dumps
+RUN echo "* hard core 0" > /etc/security/limits.d/10-kali-disable-core-dumps.conf
+# Set a secure umask value
+RUN echo "umask 027" >> /etc/bash.bashrc
+
+FROM hardened as initialse
+
+# Copy scripts and add execution permissions
+COPY Scripts/pyenv_init.sh /pyenv_init.sh
+RUN chmod +x /pyenv_init.sh
+# Ensure line endings are correct
+RUN sed -i -e 's/\r$//' /pyenv_init.sh 
+
+# COPY Scripts/change_python_version.sh /root/change_python_version.sh
+# RUN chmod +x /root/change_python_version.sh
+# # Ensure line endings are correct
+# RUN sed -i -e 's/\r$//' /change_python_version.sh 
 
 COPY Scripts /Scripts
-RUN apt update && \
-    apt install sudo -y && \
-    #
-    apt install git python3 python3-pip iproute2 nmap netcat-traditional webscarab libpcap-dev sqlmap -y && \
-    # Exploitation frameworks, exploit databases & their dependancies
-    apt install apt-utils exploitdb metasploit-framework -y && \
-    # searchsploit -u && \
-    #
-    apt install postgresql-client -y && \
-    #
-    apt install iputils-ping curl wget -y && \
-    #
-    apt install nano -y && \
-    #
-    apt install openvpn easy-rsa openssh-client openssh-server -y && \
-    #
-    apt install python3.11-venv && \
-    ## Clone git repos
-    git clone https://github.com/opsdisk/pagodo.git /pagodo && \
-    ## Install python packages
-    python3 -m venv /pagodo/venv && \
-    source env/bin/activate && \
-    python3 -m pip install yagooglesearch && \
-    # python3 -m pip install --upgrade certifi
-    # python3 /pagodo/ghdb_scraper.py # update pagodo database
-    chmod -R +x /Scripts && \
-    msfdb init && \
-    /Scripts/init.sh
-
-## Install noVNC & VNC servers      
-# RUN apt-get -y install kali-linux-${KALI_METAPACKAGE}
-# RUN apt-get -y install kali-desktop-${KALI_DESKTOP}
-# RUN apt-get -y install tightvncserver dbus dbus-x11 novnc net-tools
-ENV VNCEXPOSE 0
-ENV VNCPORT 5900
-ENV VNCPWD changeme
-ENV VNCDISPLAY 1920x1080
-ENV VNCDEPTH 16
-ENV NOVNCPORT 8888
-EXPOSE 5900
-EXPOSE 8888
-USER root
-CMD /usr/bin/bash
-
-# RUN useradd -ms /bin/bash Houston
-# USER Houston
+RUN chmod -R +x /Scripts
+RUN apt-get install dbus-tests
+CMD [ "/bin/bash", "/pyenv_init.sh"  ]

@@ -5,15 +5,16 @@ services:
   # meta-services
   full-stack:
     image: tianon/true
-    depends_on: [koan, housten, openvas, zap, database]
+    depends_on: [koan, houston, openvas, zap, database]
 
   tool-stack:
-    image: 
+    image: tianon/true
     depends_on: [openvas, zap, database]
   
   openvas:
     image: tianon/true
-    depends_on: gvm-tools
+    depends_on: 
+      - gvm-tools
 
   # ca_authority:
   #   container_name: ca_authority
@@ -87,16 +88,27 @@ services:
     container_name: Housten
     build:
       context: ./Houston
-    entrypoint: /usr/bin/bash
+    # entrypoint: Scripts/pyenv_init.sh
     tty: true
     restart: always
     depends_on:
       - koan
+    ports:
+      - ${VNCPORT}:${VNCPORT}
+      - ${NOVNCPORT}:${NOVNCPORT}
     environment:
-      http_proxy: "${http_proxy}"
+      # http_proxy: "${http_proxy}"
       database: "${database}"
+      VNCEXPOSE: ${VNCEXPOSE}
+      VNCPORT: ${VNCPORT}
+      VNCPWD: ${VNCPWD}
+      VNCDISPLAY_SIZE: ${VNCDISPLAY_SIZE}
+      VNCDEPTH: ${VNCDEPTH}
+      NOVNCPORT: ${NOVNCPORT}
+      MSFDB_PORT: ${MSFDB_PORT}
     networks:
-      - internal
+      - external
+
 
 
   database: # Data archiving
