@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Database setup
-# initdb 
+initdb 
 postgres &
 
 # Cryptographic key generation - These can be used to authenticate communications and encrypt locally sotred data
