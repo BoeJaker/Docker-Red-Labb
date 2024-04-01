@@ -39,10 +39,13 @@ services:
       TOR_CREDS: "${TOR_CREDS}"
       TOR_CRED_HASH: "${TOR_CRED_HASH}"
       # http_proxy: "${koan_http_proxy}"
-    
+    logging:
+      driver: fluentd
+      options:
+        fluentd-async-connect: 'true'
+        fluentd-address: '192.168.3.201:24224'
     networks:
-      - internal
-      - external
+      - traefik
     ports:
       - '8083:8081'
     
@@ -82,9 +85,9 @@ services:
     restart: always
     depends_on:
       - koan
-    # ports:
-    #   - ${VNCPORT}:${VNCPORT}
-    #   - ${NOVNCPORT}:${NOVNCPORT}
+    ports:
+      - ${VNCPORT}:${VNCPORT}
+      - ${NOVNCPORT}:${NOVNCPORT}
     environment:
       # http_proxy: "${http_proxy}"
       database: "${database}"
@@ -103,18 +106,8 @@ services:
         driver: fluentd
         options:
           fluentd-async-connect: 'true'
-          fluentd-address: '172.23.0.3:24224'
+          fluentd-address: '192.168.3.201:24224'
     entrypoint: [ "/bin/bash", "/pyenv_init.sh"  ]
-    # labels:
-    #   - "traefik.enable=true"
-    #   - "traefik.http.routers.kali.rule=Host(`kali.localhost`, `kali.traefik.internal`) || PathPrefix(`/kali`)"
-    #   - "traefik.http.services.kali.loadbalancer.server.port=8888"
-    #   - "traefik.http.services.kali.loadbalancer.server.scheme=https"
-    #   - "traefik.http.middlewares.kali.stripprefix.prefixes=/kali"
-    #   - "traefik.http.middlewares.kali.stripprefix.forceSlash=false"
-    #   - "traefik.http.routers.kali.middlewares=kali, kali-auth"
-    #   - "traefik.http.middlewares.kali-auth.basicauth.usersfile=/htpasswd.txt"
-      # - "function.port.80=Reverse Proxy "
     networks:
       - postgres
       - vnc
@@ -133,25 +126,24 @@ services:
       - POSTGRESQL_PASSWORD=your_password_here
     # volumes:
       # - ./Guacamole/logback.xml:/home/guacamole/.guacamole/logback.xml
+      # - ./Guacamole/guac_service_discovery:/home/guacamole/guac_service_discovery
     logging:
         driver: fluentd
         options:
           fluentd-async-connect: 'true'
-          fluentd-address: '172.23.0.3:24224'
+          fluentd-address: '192.168.3.201:24224'
     ports:
       - "8080:8080"
-    # depends_on:
-    #   - guacamole-db
+    depends_on:
+      - guacd
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.network=traefik"
       - "traefik.http.routers.guacamole.rule=Host(`guacamole.localhost`, `guacamole.traefik.internal`)"
       - "traefik.http.services.guacamole.loadbalancer.server.port=8080"
       - "traefik.http.services.guacamole.loadbalancer.server.scheme=http"
-      # - "traefik.http.middlewares.guacamole.stripprefix.prefixes=/guacamole"
-      # - "traefik.http.middlewares.guacamole.stripprefix.forceSlash=false"
       - "traefik.http.routers.guacamole.middlewares=guacamole-auth"
       - "traefik.http.middlewares.guacamole-auth.basicauth.usersfile=/htpasswd.txt"
-      # - "function.port.80=Reverse Proxy "
     networks:
       - traefik
       - postgres
@@ -165,11 +157,29 @@ services:
         driver: fluentd
         options:
           fluentd-async-connect: 'true'
-          fluentd-address: '172.23.0.3:24224'
+          fluentd-address: '192.168.3.201:24224'
     networks:
       - vnc
+  
+  # guac_service_discovery
+  gsd:
+    container_name: gsd
+    build:
+      context: ./Guacamole/guac_service_discovery
+    restart: "no"
+    logging:
+        driver: fluentd
+        options:
+          fluentd-async-connect: 'true'
+          fluentd-address: '192.168.3.201:24224'
+    volumes:
+      - "./Guacamole/guac_service_discovery/gsd.py:/gsd.py"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    networks:
+      - postgres
 
   network_scanner:
+    container_name: nework_scanner
     image: instrumentisto/nmap
     command: ["nmap", "-sn", "192.168.3.0/24", "-oG", "/scan_results/scan.txt"]
     volumes:
@@ -178,9 +188,10 @@ services:
         driver: fluentd
         options:
           fluentd-async-connect: 'true'
-          fluentd-address: '172.23.0.3:24224'
+          fluentd-address: '192.168.3.201:24224'
   
   zap:
+    container_name: zap
     image: owasp/zap2docker-stable 
     ports: 
       - 8080:8080 
@@ -189,7 +200,7 @@ services:
         driver: fluentd
         options:
           fluentd-async-connect: 'true'
-          fluentd-address: '172.23.0.3:24224'
+          fluentd-address: '192.168.3.201:24224'
 
   # OpenVAS  
 
@@ -203,7 +214,7 @@ services:
         driver: fluentd
         options:
           fluentd-async-connect: 'true'
-          fluentd-address: '172.23.0.3:24224'
+          fluentd-address: '192.168.3.201:24224'
 
   notus-data:
     image: greenbone/notus-data
@@ -213,7 +224,7 @@ services:
         driver: fluentd
         options:
           fluentd-async-connect: 'true'
-          fluentd-address: '172.23.0.3:24224'
+          fluentd-address: '192.168.3.201:24224'
 
   scap-data:
     image: greenbone/scap-data
@@ -223,7 +234,7 @@ services:
         driver: fluentd
         options:
           fluentd-async-connect: 'true'
-          fluentd-address: '172.23.0.3:24224'
+          fluentd-address: '192.168.3.201:24224'
 
   cert-bund-data:
     image: greenbone/cert-bund-data
@@ -233,7 +244,7 @@ services:
         driver: fluentd
         options:
           fluentd-async-connect: 'true'
-          fluentd-address: '172.23.0.3:24224'
+          fluentd-address: '192.168.3.201:24224'
 
   dfn-cert-data:
     image: greenbone/dfn-cert-data
@@ -245,7 +256,7 @@ services:
         driver: fluentd
         options:
           fluentd-async-connect: 'true'
-          fluentd-address: '172.23.0.3:24224'
+          fluentd-address: '192.168.3.201:24224'
 
   data-objects:
     image: greenbone/data-objects
@@ -255,7 +266,7 @@ services:
         driver: fluentd
         options:
           fluentd-async-connect: 'true'
-          fluentd-address: '172.23.0.3:24224'
+          fluentd-address: '192.168.3.201:24224'
 
   report-formats:
     image: greenbone/report-formats
@@ -267,7 +278,7 @@ services:
         driver: fluentd
         options:
           fluentd-async-connect: 'true'
-          fluentd-address: '172.23.0.3:24224'
+          fluentd-address: '192.168.3.201:24224'
 
   gpg-data:
     image: greenbone/gpg-data
@@ -277,7 +288,7 @@ services:
         driver: fluentd
         options:
           fluentd-async-connect: 'true'
-          fluentd-address: '172.23.0.3:24224'
+          fluentd-address: '192.168.3.201:24224'
 
   redis-server:
     image: greenbone/redis-server
@@ -288,7 +299,7 @@ services:
         driver: fluentd
         options:
           fluentd-async-connect: 'true'
-          fluentd-address: '172.23.0.3:24224'
+          fluentd-address: '192.168.3.201:24224'
 
   pg-gvm:
     image: greenbone/pg-gvm:stable
@@ -300,7 +311,7 @@ services:
         driver: fluentd
         options:
           fluentd-async-connect: 'true'
-          fluentd-address: '172.23.0.3:24224'
+          fluentd-address: '192.168.3.201:24224'
 
   gvmd:
     image: greenbone/gvmd:stable
@@ -332,7 +343,7 @@ services:
         driver: fluentd
         options:
           fluentd-async-connect: 'true'
-          fluentd-address: '172.23.0.3:24224'
+          fluentd-address: '192.168.3.201:24224'
 
   gsa:
     image: greenbone/gsa:stable
@@ -347,7 +358,7 @@ services:
         driver: fluentd
         options:
           fluentd-async-connect: 'true'
-          fluentd-address: '172.23.0.3:24224'
+          fluentd-address: '192.168.3.201:24224'
 
   ospd-openvas:
     image: greenbone/ospd-openvas:stable
@@ -390,7 +401,7 @@ services:
         driver: fluentd
         options:
           fluentd-async-connect: 'true'
-          fluentd-address: '172.23.0.3:24224'
+          fluentd-address: '192.168.3.201:24224'
 
   mqtt-broker:
     restart: on-failure
@@ -406,7 +417,7 @@ services:
         driver: fluentd
         options:
           fluentd-async-connect: 'true'
-          fluentd-address: '172.23.0.3:24224'
+          fluentd-address: '192.168.3.201:24224'
 
   notus-scanner:
     restart: on-failure
@@ -425,7 +436,7 @@ services:
         driver: fluentd
         options:
           fluentd-async-connect: 'true'
-          fluentd-address: '172.23.0.3:24224'
+          fluentd-address: '192.168.3.201:24224'
 
   gvm-tools:
     image: greenbone/gvm-tools
@@ -439,7 +450,7 @@ services:
         driver: fluentd
         options:
           fluentd-async-connect: 'true'
-          fluentd-address: '172.23.0.3:24224'
+          fluentd-address: '192.168.3.201:24224'
 
 
 
@@ -475,26 +486,10 @@ networks:
       external: true
 
     vnc:
+      name: vnc
+      driver: overlay
       # internal: true
-      # external: true
+      driver_opts:
+        encrypted: "true"
+        scope: local
       
-    internal: # Internal network
-        driver: bridge
-        enable_ipv6: false
-        # internal: true
-        ipam:
-            driver: default
-            config:
-                - subnet: 172.16.0.0/16
-                  gateway: 172.16.0.1
-    
-    external: # Public facing network
-        driver: bridge
-        enable_ipv6: false
-        driver_opts:
-          com.docker.network.bridge.enable_ip_masquerade: "true"
-        ipam:
-            driver: default
-            config:
-                - subnet: 173.16.0.0/16
-                  gateway: 173.16.0.1
