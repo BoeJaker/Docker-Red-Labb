@@ -142,7 +142,9 @@ services:
       - "traefik.http.routers.guacamole.rule=Host(`guacamole.localhost`, `guacamole.traefik.internal`)"
       - "traefik.http.services.guacamole.loadbalancer.server.port=8080"
       - "traefik.http.services.guacamole.loadbalancer.server.scheme=http"
-      - "traefik.http.routers.guacamole.middlewares=guacamole-auth"
+      # - "traefik.http.middlewares.guacamole=my-ipwhitelist"
+      - "traefik.http.middlewares.test-ipwhitelist.ipwhitelist.sourcerange=127.0.0.1/32, 192.168.3.201, 192.168.3.196"
+      - "traefik.http.routers.guacamole.middlewares=guacamole-auth, test-ipwhitelist"
       - "traefik.http.middlewares.guacamole-auth.basicauth.usersfile=/htpasswd.txt"
     networks:
       - traefik
