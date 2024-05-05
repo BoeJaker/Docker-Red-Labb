@@ -1,13 +1,15 @@
 import psycopg2
 import docker
-# from dotenv import dotenv_values
+from dotenv import dotenv_values
 
-password=dotenv_values("~/BACKUPS/Master/Dev/Docker_Containers/Production/Docker-Red-Lab/Guacamole/guac_service_discovery/.env")
+password=dotenv_values("/.env")
+password=password["PASSWORD"]
+
     
 # Function to connect to the database
 def connect_to_database():
     return psycopg2.connect(
-        host="10.0.5.4",
+        host="database",
         port=5432,
         database="guacamole_database",
         user="postgres",

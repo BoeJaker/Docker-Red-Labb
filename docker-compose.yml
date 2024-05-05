@@ -18,6 +18,7 @@ services:
 
 
   koan: 
+    user: "1000" # Security measure: Run as non-root
     container_name: Koan
     build:
       context: ./Koan
@@ -32,51 +33,58 @@ services:
           - ALL
           # - NET_ADMIN
           # - SYS_MODULE
-    privileged: true
+    # privileged: true
     restart: always
     environment:
       database: "${database}"
       TOR_CREDS: "${TOR_CREDS}"
       TOR_CRED_HASH: "${TOR_CRED_HASH}"
       # http_proxy: "${koan_http_proxy}"
+    networks:
+      - traefik
+    # ports:
+    #   - '8083:8081'
+
+
     logging:
       driver: fluentd
       options:
         fluentd-async-connect: 'true'
         fluentd-address: '192.168.3.201:24224'
-    networks:
-      - traefik
-    ports:
-      - '8083:8081'
-    
-    # depends_on:
-    #   - ca_authority
   
-  # ettercap:
-  #   container_name: hack-ettercap
-  #   image: mrecco/ettercap:latest
-  #   command:
-  #   - "-TbqM"
-  #   - "arp"
-  #   - "-oi"
-  #   - "interface_name"
-  #   network_mode: host
-  #   pid: host
-  #   # privileged: true
-  #   cap_add:
-  #   - NET_ADMIN
-  #   - SYS_ADMIN
-  #   stop_grace_period: 3s
-  #   restart: always
-  #   depends_on:
-  #     - koan
-  #   environment:
-  #     # http_proxy: "${http_proxy}"
-  #     database: "${database}"
-  #   networks:
-  #     - external
+  ettercap:
+    container_name: hack-ettercap
+    image: mrecco/ettercap:latest
+    command:
+    - "-TbqM"
+    - "arp"
+    - "-oi"
+    - "interface_name"
+    network_mode: host
+    pid: host
+    # privileged: true
+    cap_add:
+    - NET_ADMIN
+    - SYS_ADMIN
+    stop_grace_period: 3s
+    restart: always
+    # depends_on:
+    #   - koan
+    environment:
+      # http_proxy: "${http_proxy}"
+      database: "${database}"
+    networks:
+      - external
+
+
+    logging:
+      driver: fluentd
+      options:
+        fluentd-async-connect: 'true'
+        fluentd-address: '192.168.3.201:24224'
 
   kali: # Command and control
+    user: "1000" # Security measure: Run as non-root
     container_name: Kali
     build:
       context: ./Kali
@@ -85,9 +93,13 @@ services:
     restart: always
     depends_on:
       - koan
-    ports:
-      - ${VNCPORT}:${VNCPORT}
-      - ${NOVNCPORT}:${NOVNCPORT}
+    # ports:
+    #   - ${VNCPORT}:${VNCPORT}
+    #   - ${NOVNCPORT}:${NOVNCPORT}
+    networks:
+      - postgres
+      - vnc
+      # - traefik
     environment:
       # http_proxy: "${http_proxy}"
       database: "${database}"
@@ -98,22 +110,19 @@ services:
       VNCDEPTH: ${VNCDEPTH}
       NOVNCPORT: ${NOVNCPORT}
       MSFDB_PORT: 5432
-    networks:
-      - external
     volumes:
       - ./Kali/database.yml:/usr/share/metasploit-framework/config/database.yml
+    entrypoint: [ "/bin/bash", "/pyenv_init.sh"  ]
+
+
     logging:
         driver: fluentd
         options:
           fluentd-async-connect: 'true'
           fluentd-address: '192.168.3.201:24224'
-    entrypoint: [ "/bin/bash", "/pyenv_init.sh"  ]
-    networks:
-      - postgres
-      - vnc
-      # - traefik
 
   guacamole:
+    user: "1000" # Security measure: Run as non-root
     image: guacamole/guacamole:latest
     container_name: guacamole
     restart: unless-stopped
@@ -127,77 +136,94 @@ services:
     # volumes:
       # - ./Guacamole/logback.xml:/home/guacamole/.guacamole/logback.xml
       # - ./Guacamole/guac_service_discovery:/home/guacamole/guac_service_discovery
-    logging:
-        driver: fluentd
-        options:
-          fluentd-async-connect: 'true'
-          fluentd-address: '192.168.3.201:24224'
-    ports:
-      - "8080:8080"
+    # ports:
+    #   - "8080:8080"
+    networks:
+      - traefik
+      - postgres
+      - vnc
     depends_on:
       - guacd
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=traefik"
       - "traefik.http.routers.guacamole.rule=Host(`guacamole.localhost`, `guacamole.traefik.internal`)"
+      - "traefik.http.routers.guacamole.tls=true"
+      - "traefik.http.routers.guacamole.middlewares=guacamole-auth"
+
       - "traefik.http.services.guacamole.loadbalancer.server.port=8080"
       - "traefik.http.services.guacamole.loadbalancer.server.scheme=http"
-      # - "traefik.http.middlewares.guacamole=my-ipwhitelist"
-      - "traefik.http.middlewares.test-ipwhitelist.ipwhitelist.sourcerange=127.0.0.1/32, 192.168.3.201, 192.168.3.196"
-      - "traefik.http.routers.guacamole.middlewares=guacamole-auth, test-ipwhitelist"
-      - "traefik.http.middlewares.guacamole-auth.basicauth.usersfile=/htpasswd.txt"
-    networks:
-      - traefik
-      - postgres
-      - vnc
 
-  guacd:
-    image: guacamole/guacd:latest
-    container_name: guacd
-    restart: unless-stopped
+      # - "traefik.http.middlewares.guacamole=my-ipwhitelist"
+      # - "traefik.http.middlewares.test-ipwhitelist.ipwhitelist.sourcerange=127.0.0.1/32, 192.168.3.201, 192.168.3.196"
+      - "traefik.http.middlewares.guacamole-auth.basicauth.usersfile=/htpasswd.txt"
+
+
     logging:
         driver: fluentd
         options:
           fluentd-async-connect: 'true'
           fluentd-address: '192.168.3.201:24224'
+
+  guacd:
+    user: "1000" # Security measure: Run as non-root
+    image: guacamole/guacd:latest
+    container_name: guacd
+    restart: unless-stopped
     networks:
       - vnc
-  
+
+
+    logging:
+        driver: fluentd
+        options:
+          fluentd-async-connect: 'true'
+          fluentd-address: '192.168.3.201:24224'
+
   # guac_service_discovery
   gsd:
+    user: "1000" # Security measure: Run as non-root
     container_name: gsd
     build:
       context: ./Guacamole/guac_service_discovery
     restart: "no"
-    logging:
-        driver: fluentd
-        options:
-          fluentd-async-connect: 'true'
-          fluentd-address: '192.168.3.201:24224'
     volumes:
       - "./Guacamole/guac_service_discovery/gsd.py:/gsd.py"
       - "/var/run/docker.sock:/var/run/docker.sock"
     networks:
       - postgres
 
-  network_scanner:
-    container_name: nework_scanner
-    image: instrumentisto/nmap
-    command: ["nmap", "-sn", "192.168.3.0/24", "-oG", "/scan_results/scan.txt"]
-    volumes:
-      - ./scan_results:/scan_results
+
     logging:
         driver: fluentd
         options:
           fluentd-async-connect: 'true'
           fluentd-address: '192.168.3.201:24224'
-  
+
+  network_scanner:
+    user: "1000" # Security measure: Run as non-root
+    container_name: nework_scanner
+    image: instrumentisto/nmap
+    command: ["nmap", "-sn", "192.168.3.0/24", "-oG", "/scan_results/scan.txt"]
+    volumes:
+      - ./scan_results:/scan_results
+
+
+    logging:
+      driver: fluentd
+      options:
+        fluentd-async-connect: 'true'
+        fluentd-address: '192.168.3.201:24224'
+
   zap:
+    user: "1000" # Security measure: Run as non-root
     container_name: zap
     image: owasp/zap2docker-stable 
     ports: 
       - 8080:8080 
     entrypoint: ["zap.sh", "-daemon", "-host", "0.0.0.0", "-port", "8080"]
+
+
     logging:
         driver: fluentd
         options:
@@ -205,7 +231,6 @@ services:
           fluentd-address: '192.168.3.201:24224'
 
   # OpenVAS  
-
   vulnerability-tests:
     image: greenbone/vulnerability-tests
     environment:
@@ -217,6 +242,8 @@ services:
         options:
           fluentd-async-connect: 'true'
           fluentd-address: '192.168.3.201:24224'
+
+
 
   notus-data:
     image: greenbone/notus-data
